@@ -1,0 +1,47 @@
+---
+- name: Harden kernel parameters
+  ansible.posix.sysctl:
+    name: "{{ current_param }}"
+    value: "{{ hardened_kernel_params[current_param] }}"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  with_items: "{{ hardened_kernel_params }}"
+  loop_control:
+    loop_var: current_param
+  become: yes
+
+- name: Add /bin/true to disable kernel module installs
+  copy:
+    dest: "{{ current_item['path'] }}"
+    content: "{{ current_item['line'] }}"
+  become: yes
+  with_items:
+    - path: /etc/modprobe.d/cramfs.conf
+      line: 'install cramfs /bin/true'
+    - path: /etc/modprobe.d/freevxfs.conf
+      line: 'install freevxfs /bin/true'
+    - path: /etc/modprobe.d/jffs2.conf
+      line: 'install jffs2 /bin/true'
+    - path: /etc/modprobe.d/hfs.conf
+      line: 'install /bin/true'
+    - path: /etc/modprobe.d/hfsplus.conf
+      line: 'install hfsplus /bin/true'
+    - path: /etc/modprobe.d/udf.conf
+      line: 'install udf /bin/true'
+  loop_control:
+    loop_var: current_item
+
+- name: Ensure unneeded kernel modules are disabled
+  community.general.modprobe:
+    name: "{{ current_module }}"
+    state: absent
+  become: yes
+  loop:
+    - cramfs
+    - freevxfs
+    - jffs2
+    - hfs
+    - udf
+  loop_control:
+    loop_var: current_module

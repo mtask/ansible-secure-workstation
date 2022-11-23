@@ -1,0 +1,34 @@
+ufw_tcp_allow_out:
+  - '80'
+  - '443'
+  - '53'
+  - '22'
+ufw_udp_allow_out:
+  - '123'
+  - '53'
+  - '67'
+  - '68'
+common_packages:
+  - screen
+  - git
+  - dnsutils
+  - binutils
+  - keepassxc
+  - python3-gpg
+  - tcpdump
+  - xca
+  - qemu
+  - qemu-kvm
+  - libvirt-daemon
+  - libvirt-clients
+  - bridge-utils
+  - virt-manager
+  - apt-transport-https
+
+rsnapshot_backups:
+  src_paths:
+    - '/home/miikka/Documents'
+    - '/home/miikka/.gnupg'
+    - '/etc/'
+    - '/var/log/audit/'
+  snapshot_root: '/srv/backups'

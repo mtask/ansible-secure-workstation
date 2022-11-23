@@ -1,0 +1,13 @@
+- name: Check if compiler path exists
+  stat:
+    path: "{{ current_compiler }}"
+  become: yes
+  register: stat_current_compiler
+
+- name: Set compiler permissions
+  file:
+    path: "{{ current_compiler }}"
+    mode: 0700
+    owner: root
+  become: yes
+  when: stat_current_compiler.stat.exists

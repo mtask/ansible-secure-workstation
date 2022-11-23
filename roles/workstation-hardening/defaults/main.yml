@@ -1,0 +1,63 @@
+hardened_kernel_params:
+  fs.suid_dumpable: "0"
+  fs.protected_fifos: "2"
+  fs.protected_hardlinks: "1"
+  fs.protected_regular: "2"
+  fs.protected_symlinks: "1"
+  kernel.core_uses_pid: "1"
+  kernel.ctrl-alt-del: "0"
+  kernel.dmesg_restrict: "1"
+  kernel.kptr_restrict: "2"
+  kernel.perf_event_paranoid: "3"
+  kernel.randomize_va_space: "2"
+  kernel.sysrq: "0"
+  kernel.unprivileged_bpf_disabled: "1"
+  kernel.yama.ptrace_scope: "2"
+  net.core.bpf_jit_harden: "2"
+  net.ipv4.conf.all.accept_redirects: "0"
+  net.ipv4.conf.all.accept_source_route: "0"
+  net.ipv4.conf.all.bootp_relay: "0"
+  net.ipv4.conf.all.forwarding: "0"
+  net.ipv4.conf.all.log_martians: "1"
+  net.ipv4.conf.all.proxy_arp: "0"
+  net.ipv4.conf.all.rp_filter: "1"
+  net.ipv4.conf.all.send_redirects: "0"
+  net.ipv4.conf.default.accept_redirects: "0"
+  net.ipv4.conf.default.accept_source_route: "0"
+  net.ipv4.conf.default.log_martians: "1"
+  net.ipv4.icmp_echo_ignore_broadcasts: "1"
+  net.ipv4.icmp_ignore_bogus_error_responses: "1"
+  net.ipv4.tcp_syncookies: "1"
+  net.ipv4.tcp_timestamps: "1"
+  dev.tty.ldisc_autoload: "0"
+
+etc_issue_and_issue_net_content: "no unauthorized usage"
+systemd_services_to_stop_and_disable:
+  - 'postfix.service'
+  - 'avahi-daemon.service'
+  - 'bluetooth.service'
+  - 'cockpit.service'
+  - 'cockpit-wsinstance-http-redirect.service'
+  - 'cockpit-wsinstance-http.service'
+  - 'cups-browsed.service'
+  - 'cups.service'
+  - 'rsync.service'
+  - 'sshd.service'
+  - 'ssh.service'
+  - 'libvirtd.serve'
+
+compiler_paths:
+  - '/usr/bin/x86_64-linux-gnu-gcc-10'
+  - '/usr/bin/x86_64-linux-gnu-as'
+
+ufw_default_out: allow
+ufw_tcp_allow_out:
+  - '80'
+  - '443'
+  - '53'
+  - '22'
+ufw_udp_allow_out:
+  - '123'
+  - '53'
+  - '67'
+  - '68'

@@ -1,0 +1,30 @@
+---
+- name: Install auditd userland components
+  apt:
+    update_cache: yes
+    name:
+      - auditd
+      - audispd-plugins
+  become: yes
+
+- name: Enable auditd
+  systemd:
+    name: auditd
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Copy auditd rules
+  template:
+    src: "{{ rule_file }}"
+    dest: "/etc/audit/rules.d/"
+  loop: "{{ lookup('fileglob', 'templates/auditd/*', wantlist=True) }}"
+  loop_control:
+    loop_var: rule_file
+  become: yes
+
+- name: Restart auditd
+  systemd:
+    name: auditd
+    state: restarted
+  become: yes

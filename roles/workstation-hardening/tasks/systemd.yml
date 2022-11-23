@@ -1,0 +1,14 @@
+- name: Populate service facts
+  ansible.builtin.service_facts:
+  become: yes
+
+- name: Disable and stop unneeded services
+  systemd:
+    name: "{{ current_service }}"
+    state: stopped
+    enabled: no
+  become: yes
+  loop: "{{ systemd_services_to_stop_and_disable }}"
+  loop_control:
+    loop_var: current_service
+  when: current_service in ansible_facts.services

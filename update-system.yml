@@ -1,0 +1,12 @@
+- hosts: local
+  tasks:
+  - name: Upgrade system
+    apt:
+      upgrade: yes
+      update_cache: yes
+    become: yes
+
+  - name: Update aide
+    import_role:
+      name: workstation-hardening
+      tasks_from: aide.yml

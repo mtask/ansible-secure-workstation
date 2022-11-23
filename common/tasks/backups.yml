@@ -1,0 +1,41 @@
+- name: Get hostname
+  block:
+  - command: "hostname"
+    register: _hostname
+  - set_fact:
+      hostname: "{{ _hostname.stdout }}"
+
+- name: Create /opt/rsnapshot
+  file:
+    path: /opt/rsnapshot
+    state: directory
+    owner: "{{ lookup('env', 'USER') }}"
+    mode: 0750
+  become: yes
+
+- name: Copy rsnapshot.conf
+  template:
+    src: common/templates/rsnapshot.conf.j2
+    dest: /opt/rsnapshot/rsnapshot.conf
+    mode: 0640
+
+- name: Copy backup.sh
+  copy:
+    src: common/files/backup.sh
+    dest: /opt/rsnapshot/backup.sh
+    mode: 0750
+
+- name: "Create snapshot root ({{ rsnapshot_backups.snapshot_root }})"
+  file:
+    path: "{{ rsnapshot_backups.snapshot_root }}"
+    state: directory
+    mode: 0750
+    owner: "{{ lookup('env', 'USER') }}"
+    group: root
+  become: yes
+
+- name: Ensure rsnapshot is installed
+  apt:
+    name: rsnapshot
+    state: latest
+  become: yes

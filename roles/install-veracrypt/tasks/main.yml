@@ -1,0 +1,13 @@
+---
+- name: Add Veracrypt repository
+  apt_repository:
+    repo: 'ppa:unit193/encryption'
+    state: present
+  become: yes
+
+- name: Install Veracrypt
+  apt:
+    update_cache: yes
+    name:
+      - veracrypt
+  become: yes

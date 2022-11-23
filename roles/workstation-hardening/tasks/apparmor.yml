@@ -1,0 +1,19 @@
+---
+- name: Ensure apparmor is installed
+  apt:
+    name:
+      - apparmor
+      - apparmor-utils
+    update_cache: yes
+  become: yes
+
+- name: Ensure apparmor is started and enabled
+  systemd:
+    name: apparmor
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Enable firefox apparmor profile
+  command: aa-enforce /etc/apparmor.d/usr.bin.firefox
+  become: yes

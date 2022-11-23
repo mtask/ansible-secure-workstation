@@ -1,0 +1,6 @@
+- hosts: local
+  tasks:
+  - name: Update aide
+    import_role:
+      name: workstation-hardening
+      tasks_from: aide.yml

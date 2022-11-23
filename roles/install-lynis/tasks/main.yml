@@ -1,0 +1,20 @@
+---
+- name: Add Lynis APT key
+  apt_key:
+    url: https://packages.cisofy.com/keys/cisofy-software-public.key
+    state: present
+  become: yes
+
+- name: Add Lynis repository
+  apt_repository:
+    repo: 'deb https://packages.cisofy.com/community/lynis/deb/ stable main'
+    state: present
+    filename: cisofy.list
+  become: yes
+
+- name: Install Lynis
+  apt:
+    update_cache: yes
+    name:
+      - lynis
+  become: yes

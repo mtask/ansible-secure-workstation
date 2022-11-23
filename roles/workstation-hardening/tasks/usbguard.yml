@@ -1,0 +1,16 @@
+---
+- name: Install USB-guard
+  apt:
+    name: usbguard
+  become: yes
+
+- name: Generate USB-guard rules with currently attached devices
+  shell: 'usbguard generate-policy > /etc/usbguard/rules.conf'
+  become: yes
+
+- name: Restart USB-guard
+  systemd:
+    name: usbguard.service
+    state: restarted
+    enabled: yes
+  become: yes

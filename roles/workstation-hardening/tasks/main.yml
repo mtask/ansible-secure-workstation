@@ -1,0 +1,33 @@
+- import_tasks: ufw.yml
+  tags: ufw
+
+- import_tasks: aux.yml
+  tags: aux
+
+- import_tasks: clamav.yml
+  tags: clamav
+
+- import_tasks: auditd.yml
+  tags: auditd
+
+- import_tasks: systemd.yml
+  tags: systemd
+
+- import_tasks: harden_compilers.yml
+  tags: harden_compilers
+
+- import_tasks: usbguard.yml
+  tags: usbguard
+
+- import_tasks: apparmor.yml
+  tags: apparmor
+
+- import_tasks: grub_cmd_ipv6_apparmor.yml
+  tags: grub_cmd_ipv6_apparmor
+
+- import_tasks: kernel.yml
+  tags: kernel
+
+- import_tasks: aide.yml
+  tags: aide
+

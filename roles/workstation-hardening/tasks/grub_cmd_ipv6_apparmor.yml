@@ -1,0 +1,29 @@
+---
+- name: Set GRUB_CMDLINE_LINUX_DEFAULT setting to /etc/default/grub
+  lineinfile:
+    path: /etc/default/grub
+    regexp: "{{ current_item['regexp'] }}"
+    line: "{{ current_item['line'] }}"
+  become: yes
+  with_items:
+    - {'line': 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash ipv6.disable=1 apparmor=1 security=apparmor"', 'regexp': '^GRUB_CMDLINE_LINUX_DEFAULT=.*'}
+  loop_control:
+    loop_var: current_item
+  register: grub_cmd_default
+
+- name: Set GRUB_CMDLINE_LINUX setting to /etc/default/grub
+  lineinfile:
+    path: /etc/default/grub
+    regexp: "{{ current_item['regexp'] }}"
+    line: "{{ current_item['line'] }}"
+  become: yes
+  with_items:
+    - {'line': 'GRUB_CMDLINE_LINUX="ipv6.disable=1 apparmor=1 security=apparmor"', 'regexp': '^GRUB_CMDLINE_LINUX=.*'}
+  loop_control:
+    loop_var: current_item
+  register:  grub_cmd
+
+- name: Update grub if changes
+  command: update-grub
+  become: yes
+  when: grub_cmd.changed or grub_cmd_default.changed

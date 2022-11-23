@@ -1,0 +1,47 @@
+---
+- name: Install ufw
+  apt:
+    update_cache: yes
+    name:
+      - ufw
+  become: yes
+
+- name: Reset ufw rules
+  community.general.ufw:
+    state: reset
+  become: yes
+
+- name: Set default outbound firewall rule
+  community.general.ufw:
+    state: enabled
+    policy: "{{ ufw_default_out }}"
+    direction: outgoing
+  become: yes
+  tags: fw
+
+- name: Set default inbound firewall rule
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+  become: yes
+  tags: fw
+
+- name: Set allow out rules (tcp)
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: tcp
+    direction: out
+  become: yes
+  loop: "{{ ufw_tcp_allow_out}} "
+  tags: fw
+
+- name: Set allow out rules (udp)
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: udp
+    direction: out
+  become: yes
+  loop: "{{ ufw_udp_allow_out }}"

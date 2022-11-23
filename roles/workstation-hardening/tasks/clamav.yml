@@ -1,0 +1,68 @@
+---
+- name: Install clamav
+  apt:
+    name: clamav-daemon
+  become: yes
+
+- name: Set fs.inotify.max_user_watches
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_watches
+    value: 524288
+    sysctl_set: yes
+    state: present
+    reload: yes
+  become: yes
+
+- name: Make quarantine dir
+  file:
+    path: /root/quarantine
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: yes
+
+- name: Copy clamonacc.service
+  template:
+    src: clamonacc.service.j2
+    dest: /etc/systemd/system/clamonacc.service
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+
+- name: Copy clamd.conf.j2
+  template:
+    src: clamd.conf.j2
+    dest: /etc/clamav/clamd.conf
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+
+- name: Wait for /var/lib/clamav/main.cvd to exist
+  wait_for:
+    path: /var/lib/clamav/main.cvd
+    state: present
+  become: yes
+
+- name: Wait for /var/lib/clamav/daily.cvd to exist
+  wait_for:
+    path: /var/lib/clamav/daily.cvd
+    state: present
+  become: yes
+
+- name: Restart clamav-daemon
+  systemd:
+    name: clamav-daemon
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: Restart clamonacc
+  systemd:
+    name: clamonacc
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  become: yes

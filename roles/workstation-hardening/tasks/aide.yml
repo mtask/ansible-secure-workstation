@@ -1,0 +1,22 @@
+---
+- name: Install aide
+  apt:
+    name: aide
+  become: yes
+
+- name: Copy aide config
+  template:
+    src: aide.conf
+    dest: /etc/aide/aide.conf
+    mode: 0600
+    owner: root
+    group: root
+  become: yes
+
+- name: Init aide
+  command: aideinit --config /etc/aide/aide.conf
+  become: yes
+
+- name: move /var/lib/aide/aide.db.new to /var/lib/aide/aide.db
+  command: mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+  become: yes

@@ -1,0 +1,13 @@
+- hosts: local
+  tasks:
+  - import_tasks: common/tasks/common.yml
+    tags: common
+  - import_tasks: common/tasks/backups.yml
+    tags: backup
+  - import_role:
+      name: install-veracrypt
+  - import_role:
+      name: install-lynis
+  - import_role:
+      name: workstation-hardening
+      tasks_from: main.yml

@@ -1,0 +1,30 @@
+- name: Install common stuff
+  apt:
+    update_cache: yes
+    name: "{{ common_packages }}"
+  become: yes
+
+- name: Get current user
+  shell: 'echo $HOME'
+  register: homedir
+  changed_when: false
+
+- name: Ensure .ssh dir exists
+  file:
+    path: "{{ homedir.stdout }}/.ssh"
+    state: directory
+    mode: 0700
+
+- name: Generate an OpenSSH rsa keypair
+  community.crypto.openssh_keypair:
+    path: "{{ homedir.stdout }}/.ssh/id_rsa"
+    size: 4096
+    regenerate: never
+
+- name: Set PS1 and script log to bashrc
+  lineinfile:
+    line: "{{ item }}"
+    path: ~/.bashrc
+  with_items:
+    - "PS1='[`date  +\"%d-%b-%y %T\"`]\\[\\033[01;31m\\] \\[\\033[00m\\] - \\[\\033[01;32m\\]\\u\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ '"
+    - "test \"$(ps -ocommand= -p $PPID | awk '{print $1}')\" == 'script' || (mkdir -p $HOME/shell_log;script -f $HOME/shell_log/$(date +\"%d-%b-%y_%H-%M-%S\")_shell.log)"
