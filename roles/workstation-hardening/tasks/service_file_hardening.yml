@@ -1,0 +1,65 @@
+- name: Set current service name path
+  set_fact:
+    _current_target_service: "{{ current_unit_file.path|basename }}"
+
+- name: Set /etc/systemd/system path
+  set_fact:
+    _current_target_path: /etc/systemd/system/{{ _current_target_service }}
+
+- debug:
+    var: _current_target_path
+    verbosity: 1
+
+- name: "stat {{ _current_target_path }}"
+  stat:
+    path: "{{ _current_target_path }}"
+  register: _target_stat
+
+- debug:
+    var: _target_stat
+    verbosity: 1
+
+- name: "Copy {{ current_unit_file.path }}"
+  copy:
+    src: "{{ current_unit_file.path }}"
+    dest: "{{ _current_target_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+  when: not _target_stat.stat.exists
+
+- name: "Harden unit file {{ _current_target_service }}"
+  lineinfile:
+    path: "{{ _current_target_path }}"
+    line: "{{ item }}"
+    regexp: "{{ item.split('=')[0] }}.*"
+    insertafter: '\[Service\]'
+  loop: "{{ current_unit_file.lines }}"
+  register: _current_unit_file
+  become: yes
+  when:
+    - _current_target_service in ansible_facts.services
+    - 'ansible_facts.services[_current_target_service].state == "running"'
+
+- name: Start changed service
+  systemd:
+    name: "{{ _current_target_service }}"
+    state: stopped
+    enabled: no
+  become: yes
+  when:
+    - _current_unit_file.changed
+    - _current_target_service in ansible_facts.services
+    - 'ansible_facts.services[_current_target_service].state == "running"'
+
+- name: Start changed service
+  systemd:
+    name: "{{ _current_target_service }}"
+    state: restarted
+    enabled: yes
+  become: yes
+  when:
+    - _current_unit_file.changed
+    - _current_target_service in ansible_facts.services
+    - 'ansible_facts.services[_current_target_service].state == "running"'

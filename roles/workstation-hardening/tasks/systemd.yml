@@ -12,3 +12,9 @@
   loop_control:
     loop_var: current_service
   when: current_service in ansible_facts.services
+
+- name: Harden services
+  include_tasks: service_file_hardening.yml
+  loop: "{{ systemd_unit_files_to_harden }}"
+  loop_control:
+    loop_var: current_unit_file

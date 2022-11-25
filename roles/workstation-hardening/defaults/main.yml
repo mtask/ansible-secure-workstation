@@ -50,14 +50,107 @@ compiler_paths:
   - '/usr/bin/x86_64-linux-gnu-gcc-10'
   - '/usr/bin/x86_64-linux-gnu-as'
 
-ufw_default_out: allow
-ufw_tcp_allow_out:
+ufw:
+  policy_out: allow
+  tcp_allow_out:
   - '80'
   - '443'
   - '53'
   - '22'
-ufw_udp_allow_out:
+  udp_allow_out:
   - '123'
   - '53'
   - '67'
   - '68'
+
+systemd_unit_files_to_harden:
+  - path: /lib/systemd/system/wpa_supplicant.service
+    lines:
+      - 'PrivateTmp=yes'
+      - 'UMask=0077'
+      - 'RestrictSUIDSGID=yes'
+      - 'ProtectHome=yes'
+      - 'NoNewPrivileges=yes'
+      - 'ProtectControlGroups=yes'
+      - 'ProtectKernelModules=yes'
+      - 'ProtectKernelTunables=yes'
+      - 'ProtectSystem=strict'
+      - 'RestrictNamespaces=yes'
+      - 'IPAddressDeny=any'
+      - 'CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW'
+      - 'LimitMEMLOCK=0'
+      - 'LockPersonality=yes'
+      - 'MemoryDenyWriteExecute=yes'
+      - 'RestrictAddressFamilies=AF_UNIX AF_INET AF_NETLINK AF_PACKET'
+      - 'SystemCallFilter=@system-service'
+      - 'SystemCallArchitectures=native'
+      - 'ProtectHostname=yes'
+  - path: /lib/systemd/system/unattended-upgrades.service
+    lines:
+      - 'PrivateDevices=yes'
+      - 'ProtectControlGroups=yes'
+      - 'ProtectHome=yes'
+      - 'ProtectKernelTunables=yes'
+      - 'ProtectKernelModules=yes'
+      - 'ProtectSystem=yes'
+      - 'RestrictSUIDSGID=yes'
+      - 'ProtectHostname=yes'
+      - 'PrivateTmp=yes'
+      - 'UMask=0077'
+      - 'MemoryDenyWriteExecute=yes'
+      - 'RestrictAddressFamilies=~AF_NETLINK AF_PACKET'
+      - 'CapabilityBoundingSet=~CAP_MKNOD CAP_KILL CAP_SYSLOG CAP_NET_BIND_SERVICE CAP_NET_BROADCAST CAP_NET_RAW CAP_LINUX_IMMUTABLE CAP_IPC_LOCK CAP_SYS_CHROOT CAP_BLOCK_SUSPEND CAP_LEASE CAP_SYS_PACCT CAP_SYS_TTY_CONFI GAP_WAKE_ALARM CAP_SYS_TTY_CONFIG CAP_WAKE_ALARM CAP_SYS_BOOT CAP_NET_ADMIN'
+      - 'RestrictNamespaces=yes'
+      - 'SystemCallFilter=~@clock @debug @obsolete @swap @resources'
+      - 'NoNewPrivileges=yes'
+  - path: /lib/systemd/system/clamav-freshclam.service
+    lines:
+      - 'PrivateDevices=yes'
+      - 'ProtectControlGroups=yes'
+      - 'ProtectHome=yes'
+      - 'ProtectKernelTunables=yes'
+      - 'ProtectKernelModules=yes'
+      - 'ProtectSystem=yes'
+      - 'RestrictSUIDSGID=yes'
+      - 'ProtectHostname=yes'
+      - 'PrivateTmp=yes'
+      - 'UMask=0077'
+      - 'MemoryDenyWriteExecute=yes'
+      - 'RestrictAddressFamilies=~AF_NETLINK AF_PACKET AF_UNIX'
+      - 'CapabilityBoundingSet=~CAP_MKNOD CAP_KILL CAP_SYSLOG CAP_NET_BIND_SERVICE CAP_NET_BROADCAST CAP_NET_RAW CAP_LINUX_IMMUTABLE CAP_IPC_LOCK CAP_SYS_CHROOT CAP_BLOCK_SUSPEND CAP_LEASE CAP_SYS_PACCT CAP_SYS_TTY_CONFI GAP_WAKE_ALARM CAP_SYS_TTY_CONFIG CAP_WAKE_ALARM CAP_SYS_BOOT CAP_SYS_PTRACE CAP_SYS_PTRACE CAP_SETPCAP CAP_MAC_ADMIN'
+      - 'RestrictNamespaces=yes'
+      - 'SystemCallFilter=~@clock @debug @obsolete @swap @resources @module @reboot @raw-io @mount'
+      - 'NoNewPrivileges=yes'
+
+file_permissions:
+   - path: /etc/cron.daily
+     mode: '700'
+     state: directory
+   - path: /etc/cron.d
+     mode: '700'
+     state: directory
+   - path: /etc/cron.hourly
+     mode: '700'
+     state: directory
+   - path: /etc/cron.weekly
+     mode: '700'
+     state: directory
+   - path: /etc/cron.monthly
+     mode: '700'
+     state: directory
+   - path: /etc/sudoers.d
+     mode: '700'
+     state: directory
+   - path: /boot/grub/grub.cfg
+     mode: '600'
+     state: file
+   - path: /etc/cron.allow
+     mode: '600'
+     state: file
+   - path: /etc/crontab
+     mode: '600'
+     state: file
+access_conf_content: |
+  +:root:LOCAL
+  +:{{ lookup('env', 'USER') }}:LOCAL
+  -:ALL:ALL

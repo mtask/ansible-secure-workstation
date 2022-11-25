@@ -1,8 +1,8 @@
 - import_tasks: ufw.yml
   tags: ufw
 
-- import_tasks: aux.yml
-  tags: aux
+- import_tasks: misc.yml
+  tags: misc
 
 - import_tasks: clamav.yml
   tags: clamav

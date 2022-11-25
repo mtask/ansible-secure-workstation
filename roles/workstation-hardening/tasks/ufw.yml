@@ -14,7 +14,7 @@
 - name: Set default outbound firewall rule
   community.general.ufw:
     state: enabled
-    policy: "{{ ufw_default_out }}"
+    policy: "{{ ufw.policy_out }}"
     direction: outgoing
   become: yes
   tags: fw
@@ -34,7 +34,7 @@
     proto: tcp
     direction: out
   become: yes
-  loop: "{{ ufw_tcp_allow_out}} "
+  loop: "{{ ufw.tcp_allow_out}} "
   tags: fw
 
 - name: Set allow out rules (udp)
@@ -44,4 +44,4 @@
     proto: udp
     direction: out
   become: yes
-  loop: "{{ ufw_udp_allow_out }}"
+  loop: "{{ ufw.udp_allow_out }}"

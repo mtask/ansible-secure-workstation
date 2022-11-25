@@ -29,6 +29,14 @@
       line: 'install hfsplus /bin/true'
     - path: /etc/modprobe.d/udf.conf
       line: 'install udf /bin/true'
+    - path: /etc/modprobe.d/dccp.conf
+      line: 'install dccp /bin/true'
+    - path: /etc/modprobe.d/sctp.conf
+      line: 'install sctp /bin/true'
+    - path: /etc/modprobe.d/rds.conf
+      line: 'install rds /bin/true'
+    - path: /etc/modprobe.d/tipc.conf
+      line: 'install tipc /bin/true'
   loop_control:
     loop_var: current_item
 

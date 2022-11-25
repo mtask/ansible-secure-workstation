@@ -1,0 +1,136 @@
+- name: Copy issue and issue.net content
+  ansible.builtin.copy:
+    content: "{{ etc_issue_and_issue_net_content }}"
+    dest: "{{ issue_file }}"
+  become: yes
+  loop:
+    - /etc/issue
+    - /etc/issue.net
+  loop_control:
+    loop_var: issue_file
+
+- name: Disable core dumps
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: '* hard core 0'
+  become: yes
+
+- name: Ensure cron.deny is missing
+  file:
+    path: /etc/cron.deny
+    state: absent
+  become: yes
+
+- name: Ensure cron.allow exists
+  file:
+    path: /etc/cron.allow
+    mode: 0640
+    owner: root
+    group: root
+    state: touch
+  become: yes
+
+- name: Set recommended values for login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '{{ current_umask_value[0] }}'
+    line: '{{ current_umask_value[1] }}'
+  become: yes
+  loop:
+    - ['^PASS_MAX_DAYS.*', 'PASS_MAX_DAYS   365']
+    - ['^UMASK.*', 'UMASK           027']
+    - ['^PASS_MIN_DAYS.*', 'PASS_MIN_DAYS   1']
+  loop_control:
+    loop_var: current_umask_value
+
+- name: Find all home directories
+  find:
+    paths: /home/
+    recurse: no
+    file_type: directory
+  register: dirs
+
+- name: Set home dir permissions
+  file:
+    path: "{{ current_home.path }}"
+    mode: 0750
+  loop: "{{ dirs['files'] }}"
+  loop_control:
+    loop_var: current_home
+
+- name: Configure /tmp
+  template:
+    src: tmp.mount.j2
+    dest: /etc/systemd/system/tmp.mount
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+
+- name: Enable /tmp configuration
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: tmp.mount
+    state: started
+  become: yes
+
+- name: Configure /dev/shm
+  lineinfile:
+    path: /etc/fstab
+    line: 'tmpfs /dev/shm tmpfs defaults,noexec,nodev,nosuid,seclabel 0 0'
+    regexp: '.*/dev/shm.*'
+  register: _fstab
+  become: yes
+
+- name: Remount /dev/shm
+  command: mount -o remount,noexec,nodev,nosuid /dev/shm
+  become: yes
+  when: _fstab.changed
+
+- name: Ensure file permissions
+  file:
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
+    state: "{{ item.state }}"
+  loop: "{{ file_permissions }}"
+  become: yes
+
+- name: Install acct package
+  apt:
+    name: acct
+    state: latest
+  become: yes
+
+- name: Set /usr/sbin/accton on
+  command: /usr/sbin/accton on
+  become: yes
+
+- name: Install sysstat package
+  apt:
+    name: sysstat
+    state: latest
+  become: yes
+  register: _sysstat_inst
+
+- name: Enabled sysstat accounting data
+  lineinfile:
+    path: '/etc/default/sysstat'
+    line: 'ENABLED="true"'
+    regexp: 'ENABLED="[a-z]+"'
+  become: yes
+  register: _sysstat_conf
+
+- name: Start and enable sysstat
+  systemd:
+    name: sysstat
+    state: restarted
+    enabled: yes
+  become: yes
+  when: _sysstat_conf.changed or _sysstat_inst.changed
+
+- name: Set access.conf
+  copy:
+    content: "{{ access_conf_content }}"
+    dest: /etc/security/access.conf
+  become: yes
