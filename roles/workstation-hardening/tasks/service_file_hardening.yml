@@ -58,6 +58,7 @@
     name: "{{ _current_target_service }}"
     state: restarted
     enabled: yes
+    daemon_reload: yes
   become: yes
   when:
     - _current_unit_file.changed

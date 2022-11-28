@@ -16,40 +16,15 @@
     dest: "{{ current_item['path'] }}"
     content: "{{ current_item['line'] }}"
   become: yes
-  with_items:
-    - path: /etc/modprobe.d/cramfs.conf
-      line: 'install cramfs /bin/true'
-    - path: /etc/modprobe.d/freevxfs.conf
-      line: 'install freevxfs /bin/true'
-    - path: /etc/modprobe.d/jffs2.conf
-      line: 'install jffs2 /bin/true'
-    - path: /etc/modprobe.d/hfs.conf
-      line: 'install /bin/true'
-    - path: /etc/modprobe.d/hfsplus.conf
-      line: 'install hfsplus /bin/true'
-    - path: /etc/modprobe.d/udf.conf
-      line: 'install udf /bin/true'
-    - path: /etc/modprobe.d/dccp.conf
-      line: 'install dccp /bin/true'
-    - path: /etc/modprobe.d/sctp.conf
-      line: 'install sctp /bin/true'
-    - path: /etc/modprobe.d/rds.conf
-      line: 'install rds /bin/true'
-    - path: /etc/modprobe.d/tipc.conf
-      line: 'install tipc /bin/true'
+  loop: "{{ modpobe_disable }}"
   loop_control:
     loop_var: current_item
 
 - name: Ensure unneeded kernel modules are disabled
   community.general.modprobe:
-    name: "{{ current_module }}"
+    name: "{{ current_module['line'].split()[1] }}"
     state: absent
   become: yes
-  loop:
-    - cramfs
-    - freevxfs
-    - jffs2
-    - hfs
-    - udf
+  loop: "{{ modpobe_disable }}"
   loop_control:
     loop_var: current_module

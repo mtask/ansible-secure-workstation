@@ -46,10 +46,6 @@ systemd_services_to_stop_and_disable:
   - 'ssh.service'
   - 'libvirtd.serve'
 
-compiler_paths:
-  - '/usr/bin/x86_64-linux-gnu-gcc-10'
-  - '/usr/bin/x86_64-linux-gnu-as'
-
 ufw:
   policy_out: allow
   tcp_allow_out:
@@ -64,27 +60,6 @@ ufw:
   - '68'
 
 systemd_unit_files_to_harden:
-  - path: /lib/systemd/system/wpa_supplicant.service
-    lines:
-      - 'PrivateTmp=yes'
-      - 'UMask=0077'
-      - 'RestrictSUIDSGID=yes'
-      - 'ProtectHome=yes'
-      - 'NoNewPrivileges=yes'
-      - 'ProtectControlGroups=yes'
-      - 'ProtectKernelModules=yes'
-      - 'ProtectKernelTunables=yes'
-      - 'ProtectSystem=strict'
-      - 'RestrictNamespaces=yes'
-      - 'IPAddressDeny=any'
-      - 'CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW'
-      - 'LimitMEMLOCK=0'
-      - 'LockPersonality=yes'
-      - 'MemoryDenyWriteExecute=yes'
-      - 'RestrictAddressFamilies=AF_UNIX AF_INET AF_NETLINK AF_PACKET'
-      - 'SystemCallFilter=@system-service'
-      - 'SystemCallArchitectures=native'
-      - 'ProtectHostname=yes'
   - path: /lib/systemd/system/unattended-upgrades.service
     lines:
       - 'PrivateDevices=yes'
@@ -154,3 +129,61 @@ access_conf_content: |
   +:root:LOCAL
   +:{{ lookup('env', 'USER') }}:LOCAL
   -:ALL:ALL
+
+apparmor:
+  packages:
+    - apparmor
+    - apparmor-utils
+    - apparmor-profiles
+    - apparmor-profiles-extra
+  extra_profiles_path: '/usr/share/apparmor/extra-profiles/'
+  # List of extra profiles to enforce
+  extra_profiles_enforce:
+    - bin.netstat
+    - sbin.dhclient
+    - sbin.dhclient-script
+    - usr.bin.apropos
+    - usr.bin.man
+    - usr.bin.passwd
+    - usr.lib.man-db.man
+    - usr.sbin.postalias
+    - usr.sbin.postdrop
+    - usr.sbin.postmap
+    - usr.sbin.postqueue
+    - usr.sbin.sendmail
+    - usr.sbin.useradd
+    - usr.sbin.userdel
+  # Keep profiles in complain mode
+  complain_profiles: []
+  # Custom profiles to copy from templates
+  custom_profile_templates:
+    - 'apparmor/usr.sbin.wpa_supplicant.j2'
+
+# TODO: document below vars
+access_conf_setting_lines:
+  - ['^PASS_MAX_DAYS.*', 'PASS_MAX_DAYS   365']
+  - ['^UMASK.*', 'UMASK           027']
+  - ['^PASS_MIN_DAYS.*', 'PASS_MIN_DAYS   1']
+
+modpobe_disable:
+  - path: /etc/modprobe.d/cramfs.conf
+    line: 'install cramfs /bin/true'
+  - path: /etc/modprobe.d/freevxfs.conf
+    line: 'install freevxfs /bin/true'
+  - path: /etc/modprobe.d/jffs2.conf
+    line: 'install jffs2 /bin/true'
+  - path: /etc/modprobe.d/hfs.conf
+    line: 'install /bin/true'
+  - path: /etc/modprobe.d/hfsplus.conf
+    line: 'install hfsplus /bin/true'
+  - path: /etc/modprobe.d/udf.conf
+    line: 'install udf /bin/true'
+  - path: /etc/modprobe.d/dccp.conf
+    line: 'install dccp /bin/true'
+  - path: /etc/modprobe.d/sctp.conf
+    line: 'install sctp /bin/true'
+  - path: /etc/modprobe.d/rds.conf
+    line: 'install rds /bin/true'
+  - path: /etc/modprobe.d/tipc.conf
+    line: 'install tipc /bin/true'
+

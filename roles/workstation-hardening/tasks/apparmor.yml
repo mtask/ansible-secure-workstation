@@ -1,9 +1,7 @@
 ---
 - name: Ensure apparmor is installed
   apt:
-    name:
-      - apparmor
-      - apparmor-utils
+    name: "{{ apparmor.packages }}"
     update_cache: yes
   become: yes
 
@@ -14,6 +12,82 @@
     enabled: yes
   become: yes
 
-- name: Enable firefox apparmor profile
-  command: aa-enforce /etc/apparmor.d/usr.bin.firefox
+- name: Get apparmor profile status
+  command: aa-status --json
   become: yes
+  register: _aa_status
+
+- name: Enforce apparmor profiles
+  command: "aa-enforce {{ item }}"
+  become: yes
+  register: _aa_enforce_cmd
+  changed_when: "'in the system path list' not in _aa_enforce_cmd.stdout and 'double-check the path' not in _aa_enforce_cmd.stdout"
+  when:
+    - "(_aa_status.stdout|from_json)['profiles'][item] == 'complain'"
+    - item not in apparmor.complain_profiles
+  with_items: "{{ (_aa_status.stdout|from_json)['profiles'] }}"
+
+- name: Get list of profiles from extra-profiles
+  find:
+    paths: /usr/share/apparmor/extra-profiles/
+  become: yes
+  register: _extra_profiles
+
+- set_fact:
+    _extra_profiles_to_enforce: "{{ _extra_profiles_to_enforce|default([]) + [item.path] }}"
+  loop: "{{ _extra_profiles.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: item.path|basename in apparmor.extra_profiles_enforce
+
+- name: Copy specified extra profiles
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/apparmor.d"
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+  register: _extra_profile_copy
+  loop: "{{ _extra_profiles_to_enforce }}"
+
+- set_fact:
+    _changed_extra_profiles: "{{  _changed_extra_profiles|default({})|combine({item.item: item.changed}) }}"
+  loop_control:
+    label: "{{ item.item }}"
+  loop: "{{ _extra_profile_copy.results }}"
+
+- debug:
+    var:  _changed_extra_profiles
+
+- name: Enforce specified extra profiles
+  command: "aa-enforce /etc/apparmor.d/{{ item|basename }}"
+  become: yes
+  when:  _changed_extra_profiles[item]|bool
+  loop: "{{ _extra_profiles_to_enforce }}"
+
+- name: Copy custom profiles
+  template:
+    src: "{{ item }}"
+    dest: "/etc/apparmor.d/{{ item|basename|replace('.j2', '') }}"
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ apparmor.custom_profile_templates }}"
+  register: _custom_profiles_copy
+  become: yes
+
+- set_fact:
+    _changed_custom_profiles: "{{  _changed_custom_profiles|default({})|combine({item.item: item.changed}) }}"
+  loop_control:
+    label: "{{ item.item }}"
+  loop: "{{ _custom_profiles_copy.results }}"
+
+- debug:
+    var:  _changed_custom_profiles
+
+- name: Enforce specified custom profiles
+  command: "aa-enforce /etc/apparmor.d/{{ item|basename|replace('.j2', '') }}"
+  become: yes
+  when:  _changed_custom_profiles[item]|bool
+  loop: "{{ apparmor.custom_profile_templates }}"

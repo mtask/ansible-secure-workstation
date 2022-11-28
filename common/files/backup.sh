@@ -6,6 +6,5 @@ then
    exit 1
 fi
 
-mkdir -p rsnapshot
-rsnapshot -c ./rsnapshot.conf -v backup
+rsnapshot -c /opt/rsnapshot/rsnapshot.conf -v backup
 

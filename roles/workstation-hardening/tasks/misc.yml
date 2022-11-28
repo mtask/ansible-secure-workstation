@@ -33,15 +33,12 @@
 - name: Set recommended values for login.defs
   lineinfile:
     path: /etc/login.defs
-    regexp: '{{ current_umask_value[0] }}'
-    line: '{{ current_umask_value[1] }}'
+    regexp: '{{ current_value[0] }}'
+    line: '{{ current_value[1] }}'
   become: yes
-  loop:
-    - ['^PASS_MAX_DAYS.*', 'PASS_MAX_DAYS   365']
-    - ['^UMASK.*', 'UMASK           027']
-    - ['^PASS_MIN_DAYS.*', 'PASS_MIN_DAYS   1']
+  loop: "{{ access_conf_setting_lines }}"
   loop_control:
-    loop_var: current_umask_value
+    loop_var: current_value
 
 - name: Find all home directories
   find:

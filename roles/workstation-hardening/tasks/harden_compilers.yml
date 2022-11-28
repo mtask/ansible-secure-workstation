@@ -1,6 +1,0 @@
-
-- name: Set compiler permissions
-  include_tasks: harden_compilers_loop.yml
-  loop: "{{ compiler_paths }}"
-  loop_control:
-    loop_var: current_compiler

@@ -1,3 +1,4 @@
+{{ ansible_managed|comment }}
 ## The purpose of these rules is to meet the stig auditing requirements
 ## These rules depends on having 10-base-config.rules & 99-finalize.rules
 ## installed.

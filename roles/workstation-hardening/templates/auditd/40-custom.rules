@@ -1,2 +1,3 @@
+{{ ansible_managed|comment }}
 # Watch for quarantined files ( clamav )
 -w /root/quarantine/ -k clamav

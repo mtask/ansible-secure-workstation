@@ -46,9 +46,9 @@
     state: present
   become: yes
 
-- name: Wait for /var/lib/clamav/daily.cvd to exist
+- name: Wait for /var/lib/clamav/daily.cld to exist
   wait_for:
-    path: /var/lib/clamav/daily.cvd
+    path: /var/lib/clamav/daily.cld
     state: present
   become: yes
 

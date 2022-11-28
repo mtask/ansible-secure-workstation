@@ -2,6 +2,7 @@
   block:
   - command: "hostname"
     register: _hostname
+    changed_when: false
   - set_fact:
       hostname: "{{ _hostname.stdout }}"
 

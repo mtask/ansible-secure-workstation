@@ -6,8 +6,10 @@
     tags: backup
   - import_role:
       name: install-veracrypt
+    tags: veracrypt
   - import_role:
       name: install-lynis
+    tags: lynis
   - import_role:
       name: workstation-hardening
       tasks_from: main.yml
