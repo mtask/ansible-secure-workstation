@@ -160,7 +160,7 @@ apparmor:
     - 'apparmor/usr.sbin.wpa_supplicant.j2'
 
 # TODO: document below vars
-access_conf_setting_lines:
+login_defs_setting_lines:
   - ['^PASS_MAX_DAYS.*', 'PASS_MAX_DAYS   365']
   - ['^UMASK.*', 'UMASK           027']
   - ['^PASS_MIN_DAYS.*', 'PASS_MIN_DAYS   1']
@@ -186,4 +186,18 @@ modpobe_disable:
     line: 'install rds /bin/true'
   - path: /etc/modprobe.d/tipc.conf
     line: 'install tipc /bin/true'
+
+aide_monitor_paths:
+  - '/etc Full'
+  - '/usr/local/sbin Full'
+  - '/usr/local/bin Full'
+  - '/usr/sbin Full'
+  - '/usr/bin/sbin Full'
+  - '/bin Full'
+  - '/lib Full'
+  - '/opt Full'
+  - '/snap/bin Full'
+  - "{{ lookup('env', 'HOME') }}/.bashrc Full"
+  - "{{ lookup('env', 'HOME') }}/.ssh Full"
+  - "{{ lookup('env', 'HOME') }}/.config/autostart Full"
 

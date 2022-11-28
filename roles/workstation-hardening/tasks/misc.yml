@@ -36,7 +36,7 @@
     regexp: '{{ current_value[0] }}'
     line: '{{ current_value[1] }}'
   become: yes
-  loop: "{{ access_conf_setting_lines }}"
+  loop: "{{ login_defs_setting_lines }}"
   loop_control:
     loop_var: current_value
 
